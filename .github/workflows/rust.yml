@@ -5,9 +5,13 @@ on:
 
 jobs:
   build:
-    name: Start Building...
+    name: Start Building on Runner ${{ matrix.runner_id }}
     runs-on: windows-latest
-    timeout-minutes: 360  # Set to 6 hours (360 minutes)
+    timeout-minutes: 360  # 6 hours
+
+    strategy:
+      matrix:
+        runner_id: [1, 2, 3, 4, 5]  # 5 parallel jobs
 
     steps:
       - name: Downloading & Installing Essentials
